@@ -70,3 +70,18 @@
 # except FileNotFoundError as err:
 #     print("File not found!")
 #     print("Error:", err)       
+
+# Given a list, print all elements that appear more than once in the list
+
+numbers = [1, 2, 3, 2, 4, 5, 3, 6]
+
+seen = set()
+duplicates = set()
+
+for num in numbers:
+    if num in seen:
+        duplicates.add(num)
+    else:
+        seen.add(num)
+
+print("Elements that appear more than once:", list(duplicates))
