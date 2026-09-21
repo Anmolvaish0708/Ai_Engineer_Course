@@ -88,6 +88,28 @@ Implementation:
 
 * `practice_questions.py`
 
+### Multithreading
+
+Understanding how Python can execute multiple tasks concurrently using threads.
+
+Concepts covered:
+
+- `threading` module
+- Creating threads with `threading.Thread`
+- `target`
+- `args`
+- `start()`
+- `join()`
+- Concurrent execution
+- Comparing sequential and multithreaded execution
+- Measuring execution time with `time`
+
+Implementation:
+
+- `multithreading.py`
+
+The example demonstrates running multiple list-processing tasks concurrently and measuring the execution time.
+
 ## Learning Approach
 
 For each topic, the goal is to understand:
