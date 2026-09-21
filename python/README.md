@@ -110,6 +110,22 @@ Implementation:
 
 The example demonstrates running multiple list-processing tasks concurrently and measuring the execution time.
 
+### Practice Exercises — Set 1
+
+Additional exercises covering file handling, list comprehensions, JSON, and exception handling.
+
+Exercises include:
+
+- Writing user-provided names to a text file and reading them back
+- Filtering numbers using list comprehensions
+- Writing and reading JSON data
+- Updating JSON data with user input
+- Handling `FileNotFoundError`
+
+Implementation:
+
+- `practice_1.py`
+
 ## Learning Approach
 
 For each topic, the goal is to understand:
