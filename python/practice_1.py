@@ -71,6 +71,9 @@
 #     print("File not found!")
 #     print("Error:", err)       
 
+
+# Question 5:
+
 # Given a list, print all elements that appear more than once in the list
 
 # numbers = [1, 2, 3, 2, 4, 5, 3, 6]
@@ -86,11 +89,26 @@
 
 # print("Elements that appear more than once:", list(duplicates))
 
+
+# Question 6:
+
 # Ask the user for a string and print:
 # • All unique characters
 # • The count of unique characters
 
-user_string = input("Enter a string: ")
-unique_characters = set(user_string)
-print("Unique characters:", unique_characters)
-print("Count of unique characters:", len(unique_characters))
+# user_string = input("Enter a string: ")
+# unique_characters = set(user_string)
+# print("Unique characters:", unique_characters)
+# print("Count of unique characters:", len(unique_characters))
+
+#Question 7:
+#Write a program to check whether two lists share no common elements.
+
+numbers1 = [1, 2, 3, 4, 5]
+numbers2 = [3, 7, 8, 9, 10]
+
+if not set(numbers1) & set(numbers2):
+    print("The two lists share no common elements.")
+else:
+    print("The two lists have common elements.")    
+
