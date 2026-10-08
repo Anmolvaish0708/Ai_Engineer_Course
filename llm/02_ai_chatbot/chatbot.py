@@ -34,3 +34,4 @@ while True:
     conversation_history.append({"role": "assistant", "content": assistant_response})
 
     print("AI: ", assistant_response)
+    print("Usage:", response.usage)
