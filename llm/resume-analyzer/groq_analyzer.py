@@ -19,6 +19,8 @@ def analyze_resume(resume_text: str) -> ResumeAnalysis:
     Returns:
         ResumeAnalysis: Structured information about the candidate.
     """
+    if len(resume_text.strip()) < 50:
+        raise ValueError("Resume text is too short. Please provide a more detailed resume.")
 
     prompt = f"""
          you are a resume analyzer.
