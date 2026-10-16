@@ -1,40 +1,7 @@
+
 from groq_analyzer import analyze_resume
-# resume = """
-# Rahul Sharma
-
-# Software Engineer with 2 years of experience.
-
-# Skills:
-# Python, Machine Learning, NumPy, Pandas, AWS
-
-# Education:
-# B.Tech in Computer Science
-
-# Experience:
-# 2 years working as a Software Engineer.
-# Built machine learning applications using Python.
-# Worked with AWS services.
-
-# The candidate has strong Python and machine learning
-# skills but has limited experience with Docker and Kubernetes.
-# """
-
-# result = analyze_resume(resume)
-
-# print("\nResume Analysis Result:\n")
 
 
-# print("Name:", result.candidate_name)
-# print("Skills:", result.candidate_skills)
-# print("Experience:", result.candidate_experience)
-# print("Qualifications:", result.candidate_qualifications)
-# print("Strengths:", result.strength)
-# print("Missing Skills:", result.missing_skills)
-
-
-
-
-# Test Case 1: Complete resume
 complete_resume = """
 Rahul Sharma
 
@@ -52,8 +19,6 @@ Built Python applications and machine learning solutions.
 Used AWS services for deployment.
 """
 
-
-# Test Case 2: Resume without education details
 resume_without_education = """
 Priya Verma
 
@@ -67,27 +32,45 @@ Worked on backend applications and API development
 for 3 years.
 """
 
-
-# Test Case 3: Very little information
 minimal_resume = "Python developer"
 
 
+job_description = """
+AI Engineer
+
+Required skills:
+Python, AWS, Docker, REST APIs, LLM integration.
+Experience building and deploying AI applications is preferred.
+"""
+
+
 test_cases = [
-    ("Complete Resume", complete_resume),
-    ("Missing Education", resume_without_education),
-    ("Minimal Resume", minimal_resume),
+    ("Complete Resume", complete_resume, job_description),
+    ("Missing Education", resume_without_education, job_description),
+    ("Minimal Resume", minimal_resume, job_description),
 ]
 
 
-for test_name, resume_text in test_cases:
-    print("\n" + "=" * 60)
-    print(f"TEST: {test_name}")
-    print("=" * 60)
+def main():
+    for test_name, resume_text, job_description in test_cases:
+        print("\n" + "=" * 60)
+        print(f"TEST: {test_name}")
+        print("=" * 60)
 
-    try:
-        result = analyze_resume(resume_text)
+        try:
+            result = analyze_resume(
+                resume_text=resume_text,
+                target_job_description=job_description,
+            )
 
-        print(result.model_dump_json(indent=2))
+            print(result.model_dump_json(indent=2))
 
-    except Exception as error:
-        print(f"ERROR: {type(error).__name__}: {error}")
+        except (ValueError, TypeError) as error:
+            print(f"Input or validation error: {error}")
+
+        except Exception as error:
+            print(f"Unexpected failure: {type(error).__name__}: {error}")
+
+
+if __name__ == "__main__":
+    main()
