@@ -25,6 +25,15 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
     if len(resume_text.strip()) < 50:
         raise ValueError("Resume text is too short. Please provide a more detailed resume.")
 
+    if not isinstance(target_job_description, str):
+        raise TypeError("target_job_description must be a string.")
+
+    if target_job_description.strip() and len(target_job_description.strip()) < 50:
+        raise ValueError(
+            "Job description is too short. "
+            "Please provide a more detailed description."
+        )    
+
     system_prompt = """
      You are resume information extraction expert.
 
