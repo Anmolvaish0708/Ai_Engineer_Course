@@ -1,5 +1,6 @@
 
 from groq_analyzer import analyze_resume
+from pdf_reader import extract_resume_text_from_pdf
 
 
 complete_resume = """
@@ -34,7 +35,6 @@ for 3 years.
 
 minimal_resume = "Python developer"
 
-
 job_description = """
 AI Engineer
 
@@ -51,8 +51,9 @@ test_cases = [
 ]
 
 
-def main():
+def test_text_resumes():
     for test_name, resume_text, job_description in test_cases:
+
         print("\n" + "=" * 60)
         print(f"TEST: {test_name}")
         print("=" * 60)
@@ -60,7 +61,7 @@ def main():
         try:
             result = analyze_resume(
                 resume_text=resume_text,
-                
+                target_job_description=job_description
             )
 
             print(result.model_dump_json(indent=2))
@@ -72,5 +73,29 @@ def main():
             print(f"Unexpected failure: {type(error).__name__}: {error}")
 
 
+def test_pdf_resume():
+    pdf_path = r"C:\Users\ADMIN\Desktop\sample_resume.pdf"
+
+    print("\n" + "=" * 60)
+    print("TEST: PDF RESUME")
+    print("=" * 60)
+
+    try:
+        resume_text = extract_resume_text_from_pdf(pdf_path)
+
+        result = analyze_resume(
+            resume_text=resume_text,
+            target_job_description=job_description
+        )
+
+        print(result.model_dump_json(indent=2))
+
+    except (ValueError, TypeError) as error:
+        print(f"Input or validation error: {error}")
+
+    except Exception as error:
+        print(f"Unexpected failure: {type(error).__name__}: {error}")
+
+
 if __name__ == "__main__":
-    main()
+    test_pdf_resume()
