@@ -89,11 +89,14 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
                 }
             ],
 
+        # this only validates the json format, not the schema. The schema validation is done below with Pydantic.
             response_format = {
                 "type": "json_object"
             }
         )
 
+          
+        
         result = response.choices[0].message.content
 
         if not result:
@@ -104,4 +107,4 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
     except ValidationError as error:
         raise ValueError(
         f"The model returned data that failed validation: {error}"
-    ) from error
+        ) from error

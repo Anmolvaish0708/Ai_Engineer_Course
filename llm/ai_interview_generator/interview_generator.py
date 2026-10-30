@@ -4,6 +4,9 @@ def generate_interview_questions(role, experience, skills):
 
     prompt = f"""
     You are a senior technical interviewer.
+    Ask realistic questions.
+    Adjust difficulty according to experience.
+    Do not ask questions unrelated to the candidate's skills.
 
     Generate interview questions for:
 

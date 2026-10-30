@@ -5,6 +5,8 @@ class ResumeAnalysis(BaseModel):
     A Pydantic model representing the structured information extracted from a resume.
 
     """
+
+
     candidate_name: str = Field(default="", description="The name of the candidate or empty string if unknown.")
     candidate_skills: list[str] = Field(
         default_factory=list,
