@@ -40,41 +40,132 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
             "Please provide a more detailed description."
         )    
 
+    
+    
     system_prompt = """
-     You are resume information extraction expert.
+    You are a professional resume information extraction assistant.
 
-     You will be given a resume and an optional target job description.
-     Your task is to extract structured information from the resume and compare it against the target job description if provided.
+    You will receive a resume and an optional target job description.
+    Extract accurate information from the resume and return it
+    in the required JSON structure.
 
-     Rules:
-     - If a target job description is provided, identify required skills
-       that are not explicitly evidenced in the resume.
-     - Never assume the candidate lacks a skill just because it is
-       absent from the resume.
-     - Return the information in a structured JSON format with the following keys and types:
-        {
-            "candidate_name": "string",
-            "candidate_skills": ["string"],
-            "candidate_experience": ["string"],
-            "candidate_qualifications": ["string"],
-            "strength": "string",
-            "missing_skills": ["string"]
-        }
-     - Do not invent information. Only use what is present in the resume and job description.
-     - If any information is not present, return an empty string or an empty list as appropriate
-     1. Every field must be present.
-     2. candidate_name and strength must be strings.
-     3. candidate_skills, candidate_experience, candidate_qualifications,
-     and missing_skills must ALWAYS be arrays of strings.
-     4. If a list has no information, return [].
-     5. If a string has no information, return "".
-     6. Never replace a list with a single string.
-     7. Extract information faithfully. Never invent candidate details.
-     8. Identify missing skills only by comparing the resume with
-     the supplied target job description.
-     9. If no job description is supplied, return missing_skills as [].
-     10. Return JSON only. Do not include Markdown or explanations.   
-"""
+    EXTRACTION RULES:
+
+    1. Extract only information supported by the resume.
+    Never invent details or make unsupported assumptions.
+
+    2. candidate_name:
+    Extract the candidate's full name.
+
+    3. listed_skills:
+    Extract skills only from the dedicated Skills section
+    of the resume.
+
+    4. demonstrated_skills:
+    Extract technologies and skills supported by projects
+    and work experience. Do not assume proficiency simply
+    because a technology is mentioned.
+
+    5. candidate_experience:
+    Extract entries only from the dedicated Work Experience,
+    Professional Experience, or Employment History section.
+    Do not include projects, extracurricular activities,
+    volunteering, or student leadership positions.
+
+    6. candidate_qualifications:
+    Extract formal academic qualifications, including school
+    education, college degrees, and university degrees.
+    Do not include certifications or job simulations.
+
+    7. certifications:
+    Extract certifications, licenses, and professional
+    credentials mentioned in the resume. Do not include
+    ordinary achievements or awards.
+
+    8. achievements:
+    Extract awards, competition rankings, job simulations,
+    virtual experience programs, and other notable
+    accomplishments mentioned in the resume.
+
+    9. leadership_and_activities:
+    Extract leadership positions, student society roles,
+    volunteering, extracurricular activities, and
+    event responsibilities.
+
+    10. Preserve the original section context when classifying
+        information. Do not move an entry into another category
+        merely because of its description.
+
+    11. A bullet point and its following descriptive lines
+        belong to the same entry. Preserve the main title and
+        relevant supporting details.
+
+    12. Extract all relevant entries. Do not silently omit
+        information or duplicate the same entry across categories.
+
+    13. If information for a field is unavailable, return
+        an empty string for string fields or [] for list fields.
+
+    STRENGTH SUMMARY:
+
+    1. Write a brief summary of the candidate's strengths
+    using explicit evidence from the resume.
+
+    2. Mention relevant technical experience, projects,
+    teaching, achievements, or leadership where supported.
+
+    3. Do not invent personality traits, interests,
+    motivations, or professional capabilities.
+
+    4. Avoid proficiency labels such as expert, proficient,
+    advanced, or highly skilled unless explicitly supported
+    by the resume.
+
+    5. Use grammatically correct sentences and proper spacing.
+
+    JOB DESCRIPTION COMPARISON:
+
+    1. Extract required_skills from the explicitly required
+    skills in the supplied job description.
+
+    2. Do not include optional or preferred skills as required.
+
+    3. Compare job requirements against both listed_skills
+    and demonstrated_skills.
+
+    4. Do not add job description skills to the candidate's
+    resume skills.
+
+    5. If no job description is supplied, return
+    required_skills as [].
+
+    OUTPUT RULES:
+
+    1. Return only a valid JSON object.
+    2. Do not include Markdown, explanations, or additional text.
+    3. candidate_name and strength must be strings.
+    4. All other fields must be arrays of strings.
+    5. Never replace an array with a single string.
+    6. Do not generate candidate_skills or missing_skills.
+    These fields are calculated by the Python application.
+
+    REQUIRED JSON STRUCTURE:
+
+    {
+        "candidate_name": "string",
+        "listed_skills": ["string"],
+        "demonstrated_skills": ["string"],
+        "candidate_experience": ["string"],
+        "candidate_qualifications": ["string"],
+        "certifications": ["string"],
+        "achievements": ["string"],
+        "leadership_and_activities": ["string"],
+        "required_skills": ["string"],
+        "strength": "string"
+    }
+    """
+
+
     user_prompt = f"""
     Resume:
     {resume_text}
@@ -112,7 +203,8 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
             raise ValueError("The model returned an empty response.")
 
         return ResumeAnalysis.model_validate_json(result)
-    
+
+        
 
     except AuthenticationError as error:
         raise RuntimeError(

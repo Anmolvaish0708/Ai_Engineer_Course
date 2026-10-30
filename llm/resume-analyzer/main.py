@@ -74,7 +74,7 @@ def test_text_resumes():
 
 
 def test_pdf_resume():
-    pdf_path = r"C:\Users\ADMIN\Desktop\sample_resume.pdf"
+    pdf_path = r"C:\Users\ADMIN\Downloads\anmol_sde_resume.pdf"
 
     print("\n" + "=" * 60)
     print("TEST: PDF RESUME")
@@ -85,7 +85,7 @@ def test_pdf_resume():
 
         result = analyze_resume(
             resume_text=resume_text,
-            target_job_description=job_description
+            
         )
 
         print(result.model_dump_json(indent=2))
