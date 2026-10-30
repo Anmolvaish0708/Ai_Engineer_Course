@@ -60,7 +60,7 @@ def main():
         try:
             result = analyze_resume(
                 resume_text=resume_text,
-                target_job_description=job_description,
+                
             )
 
             print(result.model_dump_json(indent=2))

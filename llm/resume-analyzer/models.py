@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field, ValidationError
+from pydantic import BaseModel,Field
 
 class ResumeAnalysis(BaseModel):
     """
@@ -26,6 +26,7 @@ class ResumeAnalysis(BaseModel):
     )
     missing_skills: list[str] = Field(
         default_factory=list,
-        description="Required skills not evidenced in the resume, "
-            "based on a supplied target job description."
+        description="Skills required by the target job description "
+        "that are not explicitly evidenced in the resume. "
+        "Do not assume the candidate lacks these skills."
     )

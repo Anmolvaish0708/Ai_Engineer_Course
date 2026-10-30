@@ -1,12 +1,18 @@
 import os
 from models import ResumeAnalysis
-import json
 from dotenv import load_dotenv
-from groq import Groq
 from pydantic import ValidationError
+from groq import (
+    Groq,
+    APIConnectionError,
+    APIStatusError,
+    AuthenticationError,
+    RateLimitError,
+)
 
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
+MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 if not api_key:
         raise RuntimeError("GROQ_API_KEY is missing from the .env file.")
@@ -41,7 +47,10 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
      Your task is to extract structured information from the resume and compare it against the target job description if provided.
 
      Rules:
-     - If a target job description is provided, identify any required skills that are missing from the candidate's resume.
+     - If a target job description is provided, identify required skills
+       that are not explicitly evidenced in the resume.
+     - Never assume the candidate lacks a skill just because it is
+       absent from the resume.
      - Return the information in a structured JSON format with the following keys and types:
         {
             "candidate_name": "string",
@@ -77,7 +86,7 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
     """
     try:
         response = client.chat.completions.create(
-            model = "openai/gpt-oss-20b",
+            model = MODEL,
             messages = [
                 {
                     "role": "system",
@@ -104,7 +113,29 @@ def analyze_resume(resume_text: str, target_job_description: str = "") -> Resume
 
         return ResumeAnalysis.model_validate_json(result)
     
+
+    except AuthenticationError as error:
+        raise RuntimeError(
+            "Invalid Groq API key. Check your .env configuration."
+        ) from error
+
+    except RateLimitError as error:
+        raise RuntimeError(
+            "Groq request limit or quota exceeded. "
+            "Check your API usage and try again later."
+        ) from error
+
+    except APIConnectionError as error:
+        raise RuntimeError(
+            "Unable to connect to Groq. Check your internet connection."
+        ) from error
+
+    except APIStatusError as error:
+        raise RuntimeError(
+            f"Groq API returned an error. Status code: {error.status_code}"
+        ) from error
+
     except ValidationError as error:
         raise ValueError(
-        f"The model returned data that failed validation: {error}"
+            f"The model returned data that failed validation: {error}"
         ) from error
