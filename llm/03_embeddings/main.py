@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import numpy as np
 
 # 1. Load the embedding model
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -42,13 +42,30 @@ similarity_scores = cosine_similarity(
 
 print("Similarity scores:", similarity_scores)
 
-# 7. Find the documents with the highest similarity
-best_match_index = similarity_scores.argmax()
+# # 7. Find the documents with the highest similarity
+# best_match_index = similarity_scores.argmax()
 
-best_document = documents[best_match_index]
-best_score = similarity_scores[0][best_match_index]
+# best_document = documents[best_match_index]
+# best_score = similarity_scores[0][best_match_index]
 
-print("\nBest matching document:")
-print(best_document)
+# print("\nBest matching document:")
+# print(best_document)
 
-print("Similarity score:", best_score)
+# print("Similarity score:", best_score)
+
+# Get similarity scores
+scores = similarity_scores[0]
+
+# Get indices of top 3 documents
+top_k = 3
+
+top_indices = np.argsort(scores)[::-1][:top_k]
+
+# Display results
+print("\nTop 3 matching documents:\n")
+
+for rank, index in enumerate(top_indices, start=1):
+    print(f"Rank: {rank}")
+    print(f"Document: {documents[index]}")
+    print(f"Similarity: {scores[index]:.4f}")
+    print("-" * 50)
