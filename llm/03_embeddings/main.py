@@ -61,11 +61,30 @@ top_k = 3
 
 top_indices = np.argsort(scores)[::-1][:top_k]
 
-# Display results
-print("\nTop 3 matching documents:\n")
+# Similarity threshold
+threshold = 0.30
 
-for rank, index in enumerate(top_indices, start=1):
-    print(f"Rank: {rank}")
-    print(f"Document: {documents[index]}")
-    print(f"Similarity: {scores[index]:.4f}")
-    print("-" * 50)
+print("\nRelevant documents:\n")
+
+found_match = False
+
+for index in top_indices:
+    score = scores[index]
+
+    if score >= threshold:
+        found_match = True
+        print(f"Document: {documents[index]}")
+        print(f"Similarity: {scores[index]:.4f}")
+        print("-" * 50)
+
+if not found_match:
+    print("No sufficiently relevant document found.")
+    
+# Display results
+# print("\nTop 3 matching documents:\n")
+
+# for rank, index in enumerate(top_indices, start=1):
+#     print(f"Rank: {rank}")
+#     print(f"Document: {documents[index]}")
+#     print(f"Similarity: {scores[index]:.4f}")
+#     print("-" * 50)
