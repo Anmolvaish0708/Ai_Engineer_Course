@@ -48,28 +48,39 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # print("Documents successfully added!")
 
-# User query
+# user query
 query = "How can I get my money back?"
 
-# Generate query embedding
+# Step 1: Convert query into an embedding
 query_embedding = model.encode(query).tolist()
 
-# Search with metadata filtering
+# Step 2: Retrieve relevant documents
 results = collection.query(
     query_embeddings=[query_embedding],
     n_results=3,
-    where={"category": "tracking"}
+    where={"category": "refund"}
 )
 
-# Display results
-print("\nFiltered Search Results:\n")
+# Step 3: Apply a distance threshold
+max_distance = 1.5
+
+found_match = False
 
 for i in range(len(results["ids"][0])):
-    print(f"ID: {results['ids'][0][i]}")
-    print(f"Document: {results['documents'][0][i]}")
-    print(f"Metadata: {results['metadatas'][0][i]}")
-    print(f"Distance: {results['distances'][0][i]:.4f}")
-    print("-" * 50)
+
+    distance = results["distances"][0][i]
+
+    if distance <= max_distance:
+        found_match = True
+
+        print(f"Rank: {i + 1}")
+        print(f"Document: {results['documents'][0][i]}")
+        print(f"Category: {results['metadatas'][0][i]['category']}")
+        print(f"Distance: {distance:.4f}")
+        print("-" * 40)
+
+if not found_match:
+    print("No sufficiently relevant document found.")
 
 # 9. Verify stored records
 # print("Total records:", collection.count())
