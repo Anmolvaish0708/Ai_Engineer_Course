@@ -48,25 +48,23 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # print("Documents successfully added!")
 
-# 9. User query
-query = "I want to exchange my product."
+# User query
+query = "How can I get my money back?"
 
-# 10. Generate query embedding
+# Generate query embedding
 query_embedding = model.encode(query).tolist()
 
-# Search chromadb
+# Search with metadata filtering
 results = collection.query(
-    query_embeddings= [query_embedding],
-    n_results= 3
+    query_embeddings=[query_embedding],
+    n_results=3,
+    where={"category": "tracking"}
 )
 
-print(results)
-
-# 7. Display results
-print("\nSearch Results:\n")
+# Display results
+print("\nFiltered Search Results:\n")
 
 for i in range(len(results["ids"][0])):
-    print(f"Rank: {i + 1}")
     print(f"ID: {results['ids'][0][i]}")
     print(f"Document: {results['documents'][0][i]}")
     print(f"Metadata: {results['metadatas'][0][i]}")
