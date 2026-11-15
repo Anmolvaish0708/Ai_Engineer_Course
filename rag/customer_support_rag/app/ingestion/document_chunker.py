@@ -57,39 +57,101 @@ class DocumentChunker:
         # # Return the chunks
         return chunks
 
-    def _split_text(self, text, separators = None):
-        """ Splits the text into chunks based on specified separators. """
+    def _split_text(self, text, separators=None):
+        """Splits the text recursively using the configured separators."""
+
         if separators is None:
-             separators = self.separators
+            separators = self.separators
+
+        # Find the first suitable separator
+        for index, sep in enumerate(separators):
+
+            # Handle the final fallback separately
+            if sep == "":
+                results = []
+                start = 0
+
+                while start < len(text):
+                    chunk = text[start:start + self.chunk_size]
+                    results.append(chunk)
+                    start += self.chunk_size
+
+                return results
+
+            # Use this separator only if it exists in the text
+            if sep in text:
+                parts = text.split(sep)
+                processed_parts = []
+
+                for part in parts:
+                    part = part.strip()
+
+                    # Skip empty pieces
+                    if not part:
+                        continue
+
+                    # Small pieces can be merged at this level
+                    if len(part) <= self.chunk_size:
+                        processed_parts.append(part)
+
+                    # Large pieces need to be split using the next separators
+                    else:
+                        processed_parts.extend(
+                            self._split_text(
+                                part,
+                                separators[index + 1:]
+                            )
+                        )
+
+                return self._merge_splits(processed_parts, sep)
+
+        return [text]
+
+    def _merge_splits(self, parts, separator):
+        """Merge small text parts into chunks of the configured size."""
 
         results = []
+        current_chunk = ""
 
-        for index, sep in enumerate(separators):
-            if sep in text:
+        for part in parts:
+            # Remove unnecessary whitespace
+            part = part.strip()
 
-                if sep == "":
-                    # If the separator is an empty string, we can split the text into individual characters
-                    start = 0
-                    while start < len(text):
-                        chunk = text[start:start + self.chunk_size]
-                        results.append(chunk)
-                        start += self.chunk_size
+            # Skip empty parts
+            if not part:
+                continue
 
-                    return results    
+            # Calculate the length if we add this part
+            if current_chunk:
+                combined_length = (
+                    len(current_chunk) + len(separator) + len(part)
+                )
+            else:
+                combined_length = len(part)
 
-                parts = text.split(sep)
-                for part in parts:
-                     if part.strip():
-                        if len(part) <= self.chunk_size:
-                            results.append(part)
-                        else:
-                            # If the part is still too large, we can recursively split it using the next separator
-                            results.extend(self._split_text(part,separators[index+1:]))
+            # Add the part if it fits
+            if combined_length <= self.chunk_size:
+                if current_chunk:
+                    current_chunk += separator + part
+                else:
+                    current_chunk = part
 
-                return results 
-                     
-             
-             
+            # Otherwise, save the current chunk and start a new one
+            else:
+                if current_chunk:
+                    results.append(current_chunk)
+
+                current_chunk = part
+
+        # Add the final chunk because the loop may end with
+        # a chunk that has not yet been added to results
+        if current_chunk:
+            results.append(current_chunk)
+
+        return results        
+                        
+                
+                
 
 
 
