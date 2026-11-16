@@ -80,5 +80,20 @@ class EmbeddingGenerator:
 
         return embeddings
 
+    
+    def generate_query_embedding(self, query):
+        """Generate an embedding for a single user query."""
+
+        if not isinstance(query, str):
+            raise TypeError("Query must be a string.")
+
+        if not query.strip():
+            raise ValueError("Query cannot be empty.")
+
+        embeddings = self.generate_embeddings([query])
+
+        return embeddings[0]
+        
+
 
 
