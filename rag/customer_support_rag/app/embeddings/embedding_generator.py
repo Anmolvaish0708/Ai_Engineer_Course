@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from app.exceptions import EmbeddingError
+import numpy as np
 
 class EmbeddingGenerator:
 
@@ -44,9 +45,40 @@ class EmbeddingGenerator:
                 show_progress_bar=False
             )  
 
-            return embeddings
         
         except Exception as err:
             raise EmbeddingError("Failed to generate document embeddings.")  from err
+
+        # 3. Validate embedding output
+
+        if not isinstance(embeddings, np.ndarray):
+            raise EmbeddingError(
+                "Embedding model did not return a NumPy array."
+            )
+
+        if embeddings.ndim != 2:
+            raise EmbeddingError(
+                f"Expected a 2D embedding array, got {embeddings.ndim}D."
+            )
+
+        if embeddings.shape[0] != len(documents):
+            raise EmbeddingError(
+                "Number of generated embeddings does not match "
+                "the number of input documents."
+            )
+
+        if embeddings.shape[1] != self.embedding_dimension:
+            raise EmbeddingError(
+                f"Expected embedding dimension {self.embedding_dimension}, "
+                f"got {embeddings.shape[1]}."
+            )
+
+        if not np.isfinite(embeddings).all():
+            raise EmbeddingError(
+                "Embeddings contain invalid numerical values."
+            )
+
+        return embeddings
+
 
 
