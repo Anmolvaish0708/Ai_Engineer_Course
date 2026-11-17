@@ -44,8 +44,22 @@ print("Collection count:", collection.count())
 
 
 
-results = store.get_documents(ids=["faq_001"])
+# results = store.get_documents(ids=["faq_001"])
+
+# print("IDs:", results["ids"])
+# print("Documents:", results["documents"])
+# print("Metadata:", results["metadatas"])  
+
+
+query = "I forgot my password. How can I access my account?"
+
+query_embedding = embedding_generator.generate_query_embedding(query)
+
+results = store.search(
+    query_embedding=query_embedding,
+    n_results=3
+)
 
 print("IDs:", results["ids"])
 print("Documents:", results["documents"])
-print("Metadata:", results["metadatas"])  
+print("Distances:", results["distances"])

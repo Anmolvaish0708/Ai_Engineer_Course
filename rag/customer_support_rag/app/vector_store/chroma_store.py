@@ -179,5 +179,38 @@ class ChromaStore:
             )  from err  
 
 
+    def search(self, query_embedding, n_results=3):
+        """Retrieve the most relevant documents using vector similarity."""
+
+        try:
+            query_embedding = np.asarray(query_embedding, dtype = np.float32)
+        except (TypeError,ValueError) as err:
+            raise ValueError("query embedding must conatain numerical values.") from err
+
+        if query_embedding.ndim != 1:
+            raise ValueError("query embedding must be 1D array.")
+
+        if not np.isfinite(query_embedding).all():
+            raise ValueError("Query Embeddings contain invalid numerical values.")
+        
+        if n_results <= 0:
+            raise ValueError("n_results must be a positive integer.")
+
+
+        try:
+            results = self.collection.query(
+                query_embeddings = [query_embedding.tolist()],
+                n_results = n_results,
+                include = ["documents", "metadatas", "distances"]
+            )   
+
+            return results
+
+        except Exception as err:
+            raise VectorStoreError(
+                "failed to retrieve to relevant reuslts."
+            ) from err 
+
+
 
       
