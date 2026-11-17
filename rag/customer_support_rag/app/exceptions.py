@@ -20,3 +20,8 @@ class RetrievalError(RAGApplicationError):
     """
     Raised when document retrieval fails.
     """
+
+class VectorStoreError(RAGApplicationError):
+    """
+    Raised when vector database operations fail.
+    """
