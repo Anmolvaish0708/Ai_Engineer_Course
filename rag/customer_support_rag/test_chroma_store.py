@@ -41,3 +41,11 @@ stored_ids = store.add_documents(
 
 print("Stored IDs:", stored_ids)
 print("Collection count:", collection.count())
+
+
+
+results = store.get_documents(ids=["faq_001"])
+
+print("IDs:", results["ids"])
+print("Documents:", results["documents"])
+print("Metadata:", results["metadatas"])  

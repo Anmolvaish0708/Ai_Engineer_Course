@@ -66,6 +66,8 @@ class ChromaStore:
         if any(not isinstance(item, str) or not item.strip() for item in ids):
             raise ValueError("Every ID must be a non-empty string.")
 
+        ids = [item.strip() for item in ids]
+
         if len(ids) != len(set(ids)):
             raise ValueError("Document IDs must be unique.")
 
@@ -143,8 +145,39 @@ class ChromaStore:
                 "Failed to add documents to ChromaDB."
             ) from exc
         
+    def get_documents(self, ids):
+        """"Retrieve documents and metadata from chromadb based on their unique IDs."""    
 
-
-
-
+        if not hasattr(self, "collection"):
+            raise VectorStoreError(
+                "Collection is not initialized. "
+                "Call get_or_create_collection() first."
+        ) 
         
+        if not isinstance(ids, list) or not ids:
+            raise ValueError("Ids must be a non-empty list")
+
+        if any(not isinstance(item,str) or not item.strip() for item in ids):
+            raise ValueError("Each item must be a non empty string.")
+
+        ids = [item.strip() for item in ids]
+
+        if len(ids) != len(set(ids)):
+            raise ValueError("Document IDs must be unique.")
+        
+        try:
+            results = self.collection.get(
+                ids = ids,
+                include= ["documents", "metadatas"]
+            )
+
+            return results
+        
+        except Exception as err:
+            raise VectorStoreError(
+                "failed to fetch the results from chromadb."
+            )  from err  
+
+
+
+      
