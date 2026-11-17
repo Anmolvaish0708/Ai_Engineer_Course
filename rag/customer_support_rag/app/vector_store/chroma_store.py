@@ -179,9 +179,15 @@ class ChromaStore:
             )  from err  
 
 
-    def search(self, query_embedding, n_results=3):
+    def search(self, query_embedding, n_results=3, max_distance=None):
         """Retrieve the most relevant documents using vector similarity."""
 
+        if not hasattr(self, "collection"):
+            raise VectorStoreError(
+                "Collection is not initialized. "
+                "Call get_or_create_collection() first."
+            )
+        
         try:
             query_embedding = np.asarray(query_embedding, dtype = np.float32)
         except (TypeError,ValueError) as err:
@@ -190,13 +196,31 @@ class ChromaStore:
         if query_embedding.ndim != 1:
             raise ValueError("query embedding must be 1D array.")
 
+        if query_embedding.size == 0:
+            raise ValueError("Query embedding cannot be empty.")
+
         if not np.isfinite(query_embedding).all():
             raise ValueError("Query Embeddings contain invalid numerical values.")
+
+        if isinstance(n_results, bool) or not isinstance(n_results, int):
+            raise TypeError("n_results must be an integer.")
         
         if n_results <= 0:
             raise ValueError("n_results must be a positive integer.")
 
+        if max_distance is not None:
 
+            if isinstance(max_distance,bool) or not isinstance(max_distance, (int,float)):
+                raise TypeError("max_distance must be int or float.")
+            
+            if not np.isfinite(max_distance):
+                raise ValueError("max_distance must be finite.")
+            
+            if max_distance < 0:
+                raise ValueError("max_distance must be a non-negative number.")
+
+            max_distance = float(max_distance)
+            
         try:
             results = self.collection.query(
                 query_embeddings = [query_embedding.tolist()],
@@ -204,8 +228,20 @@ class ChromaStore:
                 include = ["documents", "metadatas", "distances"]
             )   
 
-            return results
+            if max_distance is None:
+                return results
 
+            filtered_indices = [i for i, distance in enumerate(results["distances"][0]) if distance <= max_distance]
+
+            filtered_results = {
+                "ids": [[results["ids"][0][i]for i in filtered_indices]],
+                "documents": [[results["documents"][0][i] for i in filtered_indices]],
+                "metadatas": [[results["metadatas"][0][i] for i in filtered_indices]],
+                "distances": [[results["distances"][0][i] for i in filtered_indices]]
+            }
+
+            return filtered_results
+        
         except Exception as err:
             raise VectorStoreError(
                 "failed to retrieve to relevant reuslts."

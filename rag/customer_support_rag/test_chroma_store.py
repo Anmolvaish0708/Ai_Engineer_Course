@@ -55,9 +55,43 @@ query = "I forgot my password. How can I access my account?"
 
 query_embedding = embedding_generator.generate_query_embedding(query)
 
+# results = store.search(
+#     query_embedding=query_embedding,
+#     n_results=3
+# )
+
+# print("IDs:", results["ids"])
+# print("Documents:", results["documents"])
+# print("Distances:", results["distances"])
+
+print("\n--- Experiment A: No threshold ---")
+
 results = store.search(
     query_embedding=query_embedding,
     n_results=3
+)
+
+print("IDs:", results["ids"])
+print("Distances:", results["distances"])
+
+print("\n--- Experiment B: Threshold 0.40 ---")
+
+results = store.search(
+    query_embedding=query_embedding,
+    n_results=3,
+    max_distance=0.40
+)
+
+print("IDs:", results["ids"])
+print("Documents:", results["documents"])
+print("Distances:", results["distances"])
+
+print("\n--- Experiment C: Threshold 0.01 ---")
+
+results = store.search(
+    query_embedding=query_embedding,
+    n_results=3,
+    max_distance=0.01
 )
 
 print("IDs:", results["ids"])
