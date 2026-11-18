@@ -4,13 +4,13 @@ class DocumentChunker:
     def __init__(self, chunk_size, chunk_overlap, separators=None):
         """Initialize and validate the chunking configuration."""
 
-        if not isinstance(chunk_size, int):
+        if isinstance(chunk_size, bool) or not isinstance(chunk_size, int):
             raise TypeError("chunk_size must be an integer.")
 
         if chunk_size <= 0:
             raise ValueError("chunk_size must be greater than zero.")
 
-        if not isinstance(chunk_overlap, int):
+        if isinstance(chunk_overlap, bool) or not isinstance(chunk_overlap, int):
             raise TypeError("chunk_overlap must be an integer.")
 
         if chunk_overlap < 0:
@@ -207,12 +207,12 @@ chunker = DocumentChunker(
     chunk_overlap=10
 )
 
-chunks = chunker.chunk_documents(
-    [
-        "Hi I am anmol pandey. Currently working as a software engineer"
-        "at Accenture. \n\n I am from IT background and my focus is currently upskilling myself."
-        "Also i'm learning DSA side by side to crack high paying job at mncs."
-    ]
-)
+# chunks = chunker.chunk_documents(
+#     [
+#         "Hi I am anmol pandey. Currently working as a software engineer"
+#         "at Accenture. \n\n I am from IT background and my focus is currently upskilling myself."
+#         "Also i'm learning DSA side by side to crack high paying job at mncs."
+#     ]
+# )
 
-print(chunks)
+# print(chunks)

@@ -29,7 +29,3 @@ class DocumentLoader:
 
         return results       
 
-loader = DocumentLoader()    
-documents = loader.load_documents(["hello", "   "])
-
-print(documents)
