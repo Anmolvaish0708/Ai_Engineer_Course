@@ -202,10 +202,10 @@ class DocumentChunker:
         return results
 
 
-chunker = DocumentChunker(
-    chunk_size=50,
-    chunk_overlap=10
-)
+# chunker = DocumentChunker(
+#     chunk_size=50,
+#     chunk_overlap=10
+# )
 
 # chunks = chunker.chunk_documents(
 #     [

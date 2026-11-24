@@ -132,7 +132,7 @@ class ChromaStore:
         # 6. Store records in ChromaDB
         try:
             self.collection.add(
-                ids=[item.strip() for item in ids],
+                ids=ids,
                 documents=documents,
                 embeddings=embeddings.tolist(),
                 metadatas=metadatas

@@ -29,3 +29,8 @@ class DocumentLoader:
 
         return results       
 
+
+# document_loader = DocumentLoader()
+
+# doc = document_loader.load_documents([" ", "results "])
+# print(doc)
