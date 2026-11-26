@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+import json
 from pathlib import Path
 
 import faiss
@@ -114,14 +115,203 @@ def load_documents():
     return documents
 
 
+# ============================================================
+# 3. TEXT CHUNKING
+# ============================================================
+
+def chunk_documents(documents):
+    """
+      Chunk the documents into smaller pieces of text with overlap.
+    """
+    if not documents:
+        raise ValueError("No documents provided for chunking.")
+
+    chunks = []
+    step_size = CHUNK_SIZE - CHUNK_OVERLAP
+
+    for document in documents:
+        text = document["text"]
+        metadata = document["metadata"]
+
+        start = 0
+
+        while start < len(text):
+            end = min(start + CHUNK_SIZE, len(text))
+            chunk_text = text[start:end].strip()
+
+            if chunk_text:
+                chunks.append({
+                    "text": chunk_text,
+                    "metadata": metadata
+                })
+            start += step_size  
+
+    if not chunks:
+        raise ValueError("No chunks could be generated.")   
+
+    print(f"Created {len(chunks)} chunks.")
+    return chunks       
+
+
+
+# ============================================================
+# 3. GENERATE EMBEDDINGS
+# ============================================================
+
+def generate_embeddings(chunks):
+    """
+    Generate embeddings for the text chunks using the specified embedding model.
+
+    """
+    if not chunks:
+        raise ValueError("No chunks provided for embedding generation.")
+
+    if EMBEDDING_BATCH_SIZE <= 0:
+         raise ValueError("Batch size must be greater than zero.")
+
+    texts = [chunk["text"] for chunk in chunks]
+
+    for text in texts:
+        if not text.strip():
+            raise ValueError("chunk cannot be empty.")
+
+    try:
+        print("\nLoading embedding model...")
+
+        model = SentenceTransformer(EMBEDDING_MODEL)   
+
+        embeddings = model.encode(
+            texts,
+            batch_size=EMBEDDING_BATCH_SIZE,
+            convert_to_numpy=True,
+            show_progress_bar=False
+        ) 
+
+        
+        embeddings = np.asarray(embeddings, dtype=np.float32)
+
+
+    except Exception as err:
+        raise RuntimeError(f"Embedding generation failed. {err}") from err
+
+    if embeddings.ndim != 2:
+            raise ValueError("Embeddings must be a 2-dimensional array.")
+
+    if embeddings.shape[0] != len(chunks):
+            raise ValueError("Number of embeddings does not match number of chunks.")
+
+    if not np.isfinite(embeddings).all():
+            raise ValueError("Embeddings contain invalid numerical values.")
+
+    print(f"Successfully generated {len(embeddings)} embeddings.")
+    print(f"Embedding dimensions: {embeddings.shape[1]}")
+
+    return embeddings
+
+
+
+# ============================================================
+# 3. BUILD FAISS INDEX
+# ============================================================
+
+
+def build_faiss_index(embeddings: np.ndarray):
+
+    if embeddings.size == 0:
+        raise ValueError("No embeddings provided.")
+
+    if embeddings.ndim != 2:
+        raise ValueError("Embeddings must be a 2-dimensional array.")
+
+    if not np.isfinite(embeddings).all():
+        raise ValueError("Embeddings contain invalid numerical values.")
+
+    # FAISS expects float32 vectors.
+    embeddings = np.ascontiguousarray(
+        embeddings,
+        dtype=np.float32
+    )
+
+    # Each row represents one embedding.
+    # Normalize vectors so inner product becomes cosine similarity.
+    normalized_embeddings = embeddings.copy()
+    faiss.normalize_L2(normalized_embeddings)
+
+    # Get the embedding dimension.
+    embedding_dimension = normalized_embeddings.shape[1]
+
+    # Create an exact inner-product index.
+    index = faiss.IndexFlatIP(embedding_dimension)
+
+    # Add document vectors to the index.
+    index.add(normalized_embeddings)
+
+    print("\nFAISS index created successfully.")
+    print(f"Total vectors indexed: {index.ntotal}")
+    print(f"Vector dimensions: {index.d}")
+
+    return index
+
+
+def save_vector_store(index, chunks):
+
+    VECTOR_STORE_DIR.mkdir(parents=True, exist_ok=True)
+
+    faiss.write_index(index, str(INDEX_PATH))
+
+    with open(CHUNKS_PATH, "w", encoding="utf-8") as file:
+        json.dump(chunks, file, ensure_ascii=False, indent=4)
+
+    print("Vector store saved successfully.")
+
+
+def load_vector_store():
+
+    if not INDEX_PATH.exists() or not CHUNKS_PATH.exists():
+        raise FileNotFoundError("Saved vector store not found.")
+
+    index = faiss.read_index(str(INDEX_PATH))
+
+    with open(CHUNKS_PATH, "r", encoding="utf-8") as file:
+        chunks = json.load(file)
+
+    if index.ntotal != len(chunks):
+        raise ValueError("FAISS index and chunks data are inconsistent.")
+
+    print("Vector store loaded successfully.")
+
+    return index, chunks
+
+
+
+def get_or_create_vector_store():
+
+    if INDEX_PATH.exists() and CHUNKS_PATH.exists():
+
+        print("Existing vector store found.")
+
+        index, chunks = load_vector_store()
+
+    else:
+
+        print("Vector store not found. Creating a new one...")
+
+        documents = load_documents()
+
+        chunks = chunk_documents(documents)
+
+        embeddings = generate_embeddings(chunks)
+
+        index = build_faiss_index(embeddings)
+
+        save_vector_store(index, chunks)
+
+    return index, chunks
+
+
 if __name__ == "__main__":
 
-    documents = load_documents()
+    index, chunks = get_or_create_vector_store()
 
-    print("\nTotal document records:", len(documents))
-
-    for index, document in enumerate(documents, start=1):
-
-        print(f"\nRecord {index}")
-        print("Metadata:", document["metadata"])
-        print("Text:", document["text"][:200])
+    print("\nTotal vectors:", index.ntotal)
+    print("Total chunks:", len(chunks))
